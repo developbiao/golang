@@ -39,16 +39,16 @@ func variableInitialValue() {
 
 func variableTypeDeduction() {
 	var a, b, c, s = 3, 7, false, "def"
-	fmt.Println(a, b, c, s);
+	fmt.Println(a, b, c, s)
 }
 
 func variableShorter() {
 	a, b, c, s := 3, 7, false, "def"
-	fmt.Println(a, b, c, s);
+	fmt.Println(a, b, c, s)
 }
 
 func euler() {
-	fmt.Printf("%.3f\n", cmplx.Exp(1i * math.Pi) + 1)
+	fmt.Printf("%.3f\n", cmplx.Exp(1i*math.Pi)+1)
 }
 
 func triangle() {
@@ -58,17 +58,17 @@ func triangle() {
 
 func calcTriangle(a, b int) int {
 	var c int
-	c = int( math.Sqrt( float64( a * a + b * b ) ) )
+	c = int(math.Sqrt(float64(a*a + b*b)))
 	return c
 }
 
 func consts() {
 	const (
 		filename = "abc.txt"
-		a, b = 3, 4
+		a, b     = 3, 4
 	)
 	var c int
-	c = int( math.Sqrt( a * a + b * b ))
+	c = int(math.Sqrt(a*a + b*b))
 	fmt.Println(filename, c)
 }
 
@@ -94,4 +94,3 @@ func enums() {
 	fmt.Println(cpp, python, golang, php)
 	fmt.Println(b, kb, mb, gb, tb, pb)
 }
-

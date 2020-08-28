@@ -1,8 +1,10 @@
 package main
 
 import (
-	"flymic.com/learngo/tree"
 	"fmt"
+	"github.com/gpmgo/gopm/modules/log"
+
+	"flymic.com/learngo/tree"
 )
 
 // extends class
@@ -42,9 +44,15 @@ func main() {
 	fmt.Println()
 
 	nodeCount := 0
-	root.TraverseFunc(func(node *tree.Node){
+	root.TraverseFunc(func(node *tree.Node) {
 		nodeCount++
 	})
 	fmt.Println("Node count: ", nodeCount)
+
+	testPrint()
+	fmt.Println("ok")
 }
 
+func testPrint() {
+	log.Print(log.WARNING, "%s Hello test Log")
+}
