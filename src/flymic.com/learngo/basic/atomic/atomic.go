@@ -11,6 +11,7 @@ type atomicInt struct {
 	lock  sync.Mutex
 }
 
+// save increment for atomicInt
 func (a *atomicInt) increment() {
 	fmt.Println("safe increment")
 	func() {
