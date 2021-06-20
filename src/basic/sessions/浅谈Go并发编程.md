@@ -409,6 +409,9 @@ go run -race vaccination_mutex.go
 Channel是Go中的一个核心类型，你可以把它看成一个管道，通过它并发核心单元就可以发送或者接收数据进行通讯。
 Channel 类型是Go语言内置类型，无需引用包直接使用。
 
+![channel](./images/channel01.jpeg)
+
+
 #### 2. Channel 的应用场景
 a. <b>数据传递</b>： 一个goroutine向另一个goroutine传递数据。
 b. <b>数据交流</b>：并发时像queue, 生产者(Producer)消费者(Consumer)模式，goroutine多个生产者和多个消费者。
