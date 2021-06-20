@@ -23,7 +23,7 @@ https://www.toptal.com/back-end/server-side-io-performance-node-php-java-go
 
 ###  二、并发编程
 
-#### 1. 什么是并发
+#### 1.  什么是并发
 
 > Go语言的并发是属于Go的一大亮点，支持创建协程而非其它语言如Java的线程。
 
@@ -399,9 +399,218 @@ go run -race vaccination_mutex.go
 
 
 
+### 三、Channle（通道）
+> Don't communicate by sharing memory, share memory by communicating.
+> —— Go Proverbs by Rob Pike
+
+执行业务处理的 goroutine 不要通过共享内存的方式通信，而是要通过 Channel 通信的方式共享数据。
+
+#### 1. 什么是Channel
+Channel是Go中的一个核心类型，你可以把它看成一个管道，通过它并发核心单元就可以发送或者接收数据进行通讯。
+Channel 类型是Go语言内置类型，无需引用包直接使用。
+
+#### 2. Channel 的应用场景
+a. <b>数据传递</b>： 一个goroutine向另一个goroutine传递数据。
+b. <b>数据交流</b>：并发时像queue, 生产者(Producer)消费者(Consumer)模式，goroutine多个生产者和多个消费者。
+c. <b>信号通知</b>: 一个goroutine可以将信息(closing, closed, data ready) 等状态传递给其它goroutine
+d. <b>任务编排</b>: 让一组任务并发或串行执行的能力。
+e. <b>锁 </b> Channel也可以实现互斥锁的机制。
 
 
-### 三、案例分享
+#### 3. 简单发送消息和接收消息示例
+
+channel_demo01.go
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	// Create buffered is 2 channel
+	ch1 := make(chan int, 2)
+	// Sender
+	go func() {
+		for i := 0; i < 10; i++ {
+			ch1 <- i
+		}
+		fmt.Println("Sender: close the channel...")
+		close(ch1)
+	}()
+
+	// Receiver
+	for {
+		elem, ok := <-ch1
+		if !ok {
+			fmt.Println("Receiver: closed channel")
+			break
+		}
+		fmt.Printf("Receiver: receive an elemnt: %v\n", elem)
+	}
+
+	fmt.Println("End.")
+}
+```
+
+输出结果：
+
+```log
+Receiver: receive an elemnt: 0
+Receiver: receive an elemnt: 1
+Receiver: receive an elemnt: 2
+Receiver: receive an elemnt: 3
+Receiver: receive an elemnt: 4
+Receiver: receive an elemnt: 5
+Receiver: receive an elemnt: 6
+Receiver: receive an elemnt: 7
+Receiver: receive an elemnt: 8
+Receiver: receive an elemnt: 9
+Sender: close the channel...
+Receiver: closed channel
+End.
+```
+
+<br/>
+<br/>
+
+简单实现生产者和消费者示例代码：
+producer_consumer.go
+
+```go
+package main
+
+import (
+	"fmt"
+	"strconv"
+	"time"
+)
+
+func main() {
+	// producer
+	ch := producer()
+	// consumer in the main conroutine
+	consumer(ch)
+	//time.Sleep(3 * 1e9)
+	fmt.Println("Main func is over!")
+}
+
+func producer() chan string {
+	ch := make(chan string)
+	go func() {
+		for i := 0; i <= 10; i++ {
+			msg := "Product #" + strconv.Itoa(i)
+			fmt.Println(msg)
+			ch <- msg
+			time.Sleep(1e9)
+		}
+		close(ch)
+	}()
+	return ch
+}
+
+func consumer(ch chan string) {
+	for msg := range ch {
+		fmt.Println("Consumer<< " + msg)
+	}
+	fmt.Println("ch closed.")
+}
+
+```
+
+输出结果：
+
+```log
+Product #0
+Consumer<< Product #0
+Product #1
+Consumer<< Product #1
+Product #2
+Consumer<< Product #2
+Product #3
+Consumer<< Product #3
+Product #4
+Consumer<< Product #4
+Product #5
+Consumer<< Product #5
+Product #6
+Consumer<< Product #6
+Product #7
+Consumer<< Product #7
+Product #8
+Consumer<< Product #8
+Product #9
+Consumer<< Product #9
+Product #10
+Consumer<< Product #10
+ch closed.
+Main func is over!
+
+```
+
+#### 4.  select 语句的使用
+- select 语句只能和channel联用，它一般由若干个分支组成。每次执行一般只有一个分支中的代码会被运行。
+- select语句可以使用多路复用，如聊天软件一个通道负责发送消息另一个通道接收消息，可以同时响应多个通道的操作。
+- select语句可以一组send操作和receive操作去处理，类似switch,它的case可以是send语句，也可以是receive语句，或者default。
+
+
+场景： 需要对多个通道进行同时处理，但只处理最先发生的channel时
+
+随机选择一个channel代码示例：
+select01.go
+
+```go
+package main
+
+import (
+	"fmt"
+	"math/rand"
+	"time"
+)
+
+func main() {
+	example01()
+}
+
+func example01() {
+	// Prepare some channel
+	intChannles := [3]chan int{
+		make(chan int, 1),
+		make(chan int, 1),
+		make(chan int, 1),
+	}
+
+	// Random chose one channel, send element for it
+	index := rand.Intn(3)
+	fmt.Printf("The index: %d\n", index)
+	intChannles[index] <- index
+
+	// Which one channel exists can fetch element, whice branch will be exected
+	select {
+	case <-intChannles[0]:
+		fmt.Println("The first candiate case is selected.")
+	case <-intChannles[1]:
+		fmt.Println("The second  candiate case is selected.")
+	case elem := <-intChannles[2]:
+		fmt.Printf("The third candidate case is selected, the element is %d\n", elem)
+	default:
+		fmt.Println("No candiate case is selected")
+	}
+}
+
+```
+
+输出结果：
+
+```go
+The index: 2
+The third candidate case is selected, the element is 2
+The candidate case is closed.
+```
+
+
+
+
+### 四、案例分享
 
 #### 更新中...
 
