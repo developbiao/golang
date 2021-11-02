@@ -8,6 +8,10 @@ type person struct {
 }
 
 func (p *person) birthday() {
+	// guard
+	if p == nil {
+		return
+	}
 	p.age++
 }
 
